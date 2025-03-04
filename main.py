@@ -8,7 +8,9 @@ def leave_one_out_cross_validation(data, current_set, feature_to_add):
     return accuracy
 
 
-def leave_one_out_cross_validation1(data, current_set, feature_to_add): #nearest neighbor
+def leave_one_out_cross_validation1(data, current_set, feature_to_add): #nearest neighbor, cs170 demo function in video
+    #first column -> class 
+    data = np.loadtxt(r"C:\Users\shiva\cs170\project2\CS170Project2\CS170_Small_Data__80.txt")
 
     return accuracy
 
@@ -32,23 +34,24 @@ def forwardSelection(data): #data is the data set youre intaking
 
         for k in range(1, dsize): #these nested loops helps us traverse through the search space  
             if k not in current_set_of_features:  #dont add duplicate features, make sure each feature is added only once
-                print(f"--Consider adding the {k} feature")
                 accuracy = leave_one_out_cross_validation(data,current_set_of_features, k) #we are looking to remember highest num (IS IT K OR K+1)
+                print(f"--Consider adding the {k} feature. Accuracy: {accuracy:.4f}")
                
                 #get max (local accuracy) -> getting the best accuracy in k
                 if accuracy > best_so_far_accuracy:
                     best_so_far_accuracy = accuracy
                     feature_to_add_at_this_level = k #k feature gave us this accuracy so we want to add it
-                    
-        current_set_of_features.append(feature_to_add_at_this_level) #add new feature to current set since we chose it
-        print(f"On level {i} i added feature {feature_to_add_at_this_level} to current set")
 
         
         #get the highest accuracy of all calculate accuracies so far
         if global_accuracy < best_so_far_accuracy:
             global_accuracy = best_so_far_accuracy
+            current_set_of_features.append(feature_to_add_at_this_level) #add new feature to current set since we chose it
+            print(f"On level {i} i added feature {feature_to_add_at_this_level} to current set. Best so far accuracy: {best_so_far_accuracy:.4f}")
         else:
             print(f"\Warning, Accuracy has decreased! Continuing search in case of local maxima")
+    print(f"Final Accuracy:{global_accuracy:.4f}")
+    print(f"Final Selected Features: {current_set_of_features}")
 
 def backwardSelection(data):
     size = data.shape
@@ -88,6 +91,8 @@ def backwardSelection(data):
 
 
 if __name__ == "__main__":
+    print("Welcome!")
     data = np.loadtxt(r"C:\Users\shiva\cs170\project2\CS170Project2\CS170_Small_Data__80.txt")
+    forwardSelection(data)
 
     
