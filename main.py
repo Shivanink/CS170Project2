@@ -1,4 +1,5 @@
 import random
+import time
 import numpy as np #better for arrays
 
 
@@ -48,6 +49,8 @@ def leave_one_out_cross_validation(data, current_set, feature_to_add): #nearest 
 
 
 def forwardSelection(data): #data is the data set youre intaking
+    startTime = time.time() #start timer
+
     size = data.shape #get num of rows and column in dataset
     dsize = size[1] #get number of columns (where attributes are)
 
@@ -63,7 +66,7 @@ def forwardSelection(data): #data is the data set youre intaking
         for k in range(1, dsize): #these nested loops helps us traverse through the search space  
             if k not in current_set_of_features:  #dont add duplicate features, make sure each feature is added only once
                 accuracy = leave_one_out_cross_validation(data,current_set_of_features, k) #we are looking to remember highest num
-                print(f"--Consider adding the {k} feature. Accuracy: {accuracy:.4f}")
+                print(f"--Consider adding the {k} feature. Accuracy: {accuracy*100:.2f} %")
                
                 #get max (local accuracy) -> getting the best accuracy in k
                 if accuracy > best_so_far_accuracy:
@@ -75,14 +78,19 @@ def forwardSelection(data): #data is the data set youre intaking
         if global_accuracy < best_so_far_accuracy:
             global_accuracy = best_so_far_accuracy
             current_set_of_features.append(feature_to_add_at_this_level) #add new feature to current set since we chose it
-            print(f"On level {i} i added feature {feature_to_add_at_this_level} to current set. Best so far accuracy: {best_so_far_accuracy:.4f}")
+            print(f"On level {i} i added feature {feature_to_add_at_this_level} to current set. Best so far accuracy: {best_so_far_accuracy*100:.2f} %")
         else:
             print(f"Warning, Accuracy has decreased! Continuing search in case of local maxima") #ask if this is right
 
-    print(f"Final Accuracy:{global_accuracy:.4f}")
+    endTime = time.time() #end timer
+    print(f"Final Accuracy: {global_accuracy*100:.2f} %")
     print(f"Final Selected Features: {current_set_of_features}")
+    print (f"Time taken to execute: {endTime - startTime:.3f} seconds")
 
 def backwardElimination(data):
+
+    startTime = time.time() #start timer
+
     size = data.shape
     dsize = size[1]
 
@@ -106,7 +114,7 @@ def backwardElimination(data):
                 temp_set.remove(k)
 
                 accuracy = leave_one_out_cross_validation(data,temp_set, None) #calculate accuracy
-                print(f"--Consider removing the {k} feature.Accuracy: {accuracy:.4f} ")
+                print(f"--Consider removing the {k} feature.Accuracy: {accuracy*100:.2f} %")
                 
                 #get best accuracy and which feature causes it
                 if accuracy >= best_so_far_accuracy:
@@ -123,13 +131,17 @@ def backwardElimination(data):
             else:
                 print(f"Warning, Accuracy has decreased! Continuing search in case of local maxima") #if accruacy didnt improve
 
-            print(f"On level {i} i removed feature {feature_to_delete_at_this_level} from the current set. Best so far accuracy: {best_so_far_accuracy:.4f}")
+            print(f"On level {i} i removed feature {feature_to_delete_at_this_level} from the current set. Best so far accuracy: {best_so_far_accuracy*100:.2f} %")
 
         #stop if only 1 feature is left
         if len(current_set_of_features) <=1:
             break
-    print(f"Final Accuracy:{global_accuracy:.4f}")
+    
+    endTime = time.time() #end timer
+    print(f"Final Accuracy:{global_accuracy * 100:.2f} %")
     print(f"Final Selected Features: {selected_set}")
+    print (f"Time taken to execute: {endTime - startTime:.3f} seconds")
+
 
 
 
