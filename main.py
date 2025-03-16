@@ -2,56 +2,39 @@ import random
 import numpy as np #better for arrays
 
 
-#code stub
-def leave_one_out_cross_validation1(data, current_set, feature_to_add):
-    accuracy = random.random() #we are replacing this code with the real code later
-    return accuracy
+#Note: I left some debug code to show my progress. 
 
-#Todo still:
-# - add this to the search functions and make sure you can pass everything in (CHECK I THINK)
-# - make sure to delete features youre not using. u can do this by setting them to 0
 def leave_one_out_cross_validation(data, current_set, feature_to_add): #nearest neighbor, cs170 demo function in video
     #first column -> class     
     size = data.shape
-    dsizecol = size[0]
+    dsizecol = size[0] #num of rows/data points
 
-    dcopy = np.copy(data)
-    # dcopy = data.tonumpy()
+    dcopy = np.copy(data) #copy of data so original data doesn't get modified 
+
+    #set features to 0 if they arent in the current set and if its not the current feature being tested
     for i in range(1, dcopy.shape[1]):
         if i not in current_set and i != feature_to_add:
             dcopy[:,i]= 0
 
-
-
     number_correctly_classified = 0
     
     for i in range(dsizecol): #loop through each row
-        object_to_classify = dcopy[i, 1:] #data that includes everything but the class/label column
-        label_object_to_classify = dcopy[i, 0] #only the first label column
+        object_to_classify = dcopy[i, 1:] #extract feature values of current point
+        label_object_to_classify = dcopy[i, 0] #extract label of current point
 
-        nearest_neighbor_distance = float('inf')
-        nearest_neighbor_location = None
-        
+        allDistances = np.sum((dcopy[:, 1:] - object_to_classify) ** 2, axis=1) #computes euclidean distances between this point and all other points
+        allDistances = np.sqrt(allDistances) #takes square root (part of previous)
 
-        for k in range(dsizecol):
-            if k != i: #dont compare itself to itself
-                #print(f"Ask if {i} is nearest neighbour with {k}")
-                distance = (object_to_classify - dcopy[k,1:])**2 #square the difference
-                distance = np.sqrt(np.sum(distance)) #square     root the sum of distance
+        allDistances[i] = np.inf #ignore self so it doesnt get chosen as closest neighbor
 
-                if distance < nearest_neighbor_distance: #find the smallest distance   
-                    nearest_neighbor_distance = distance #distance from neighbor (smallest distance)    
-                    nearest_neighbor_location = k #store index of nearest neighbor
-                    nearest_neighbor_label = dcopy[nearest_neighbor_location, 0] #class of neighbor
-        #print(f"Object{i} is class {label_object_to_classify}")
-        #print (f"Its nearest neighbor is {nearest_neighbor_location} which is in class {nearest_neighbor_label}")
+        #finds nearest neighbor
+        nearest_neighbor_location = np.argmin(allDistances) #index of smallest value
+        nearest_neighbor_label = dcopy[nearest_neighbor_location, 0] #label of the neartest neighbpr
 
-        if label_object_to_classify == nearest_neighbor_label:
+        if label_object_to_classify == nearest_neighbor_label: #count to check if classifcation was accurate/correct
             number_correctly_classified += 1
     
-    accuracy = number_correctly_classified/(dsizecol)
-
-
+    accuracy = number_correctly_classified/(dsizecol) #classification calculation
 
         #print(f"Looping over i, at the {i} location")
         #print(f"The {i}th object is in class {label_object_to_classify}")
@@ -66,23 +49,20 @@ def leave_one_out_cross_validation(data, current_set, feature_to_add): #nearest 
 
 def forwardSelection(data): #data is the data set youre intaking
     size = data.shape #get num of rows and column in dataset
-    dsize = size[1] #get number of columns (where attributes are) #IS LABEL AT 0 INDEX??
+    dsize = size[1] #get number of columns (where attributes are)
 
-    current_set_of_features = [] #initialize empty list so we can keep track of items, Q: does it need to be set or list
-    global_accuracy = 0 #best overall accuracy
+    current_set_of_features = [] #initialize empty list so we can keep track of items
+    global_accuracy = 0 #best overall accuracy found
 
     for i in range(1, dsize): #first column is just label so it doesn't count, go up to last column
         print(f"On the {i}th level of the search tree")
-        feature_to_add_at_this_level = None #should this be a set or is it jsut one val Q
+        feature_to_add_at_this_level = None
         best_so_far_accuracy = 0
 
-        dcopy = np.copy(data) #MAYBE DELETE
-
+        #iterate over all possible features to add
         for k in range(1, dsize): #these nested loops helps us traverse through the search space  
             if k not in current_set_of_features:  #dont add duplicate features, make sure each feature is added only once
-                temp_set = np.copy(dcopy)
-                
-                accuracy = leave_one_out_cross_validation(data,current_set_of_features, k) #we are looking to remember highest num (IS IT K OR K+1)
+                accuracy = leave_one_out_cross_validation(data,current_set_of_features, k) #we are looking to remember highest num
                 print(f"--Consider adding the {k} feature. Accuracy: {accuracy:.4f}")
                
                 #get max (local accuracy) -> getting the best accuracy in k
@@ -91,7 +71,7 @@ def forwardSelection(data): #data is the data set youre intaking
                     feature_to_add_at_this_level = k #k feature gave us this accuracy so we want to add it
 
         
-        #get the highest accuracy of all calculate accuracies so far
+        #if new feature improves accuracy, add it to current set
         if global_accuracy < best_so_far_accuracy:
             global_accuracy = best_so_far_accuracy
             current_set_of_features.append(feature_to_add_at_this_level) #add new feature to current set since we chose it
@@ -108,15 +88,18 @@ def backwardElimination(data):
 
     #start with list of all features
     current_set_of_features =[]
-    global_accuracy = leave_one_out_cross_validation(data, current_set_of_features, None)
+    selected_set =[]
     for ft in range(1, dsize):
         current_set_of_features.append(ft)
+    global_accuracy = leave_one_out_cross_validation(data, current_set_of_features, None)
     
+
     for i in range(1,dsize):
         print(f"On the {i}th level of the search tree")
         feature_to_delete_at_this_level = None
-        best_so_far_accuracy = global_accuracy #float('inf')
+        best_so_far_accuracy = 0 #float('inf') #global accuracy
 
+        #try removing each feature and check accuracy 
         for k in range(1, dsize):
             if k in current_set_of_features: #make sure the feature exists in the set before you can delete it
                 temp_set = current_set_of_features.copy()
@@ -125,26 +108,28 @@ def backwardElimination(data):
                 accuracy = leave_one_out_cross_validation(data,temp_set, None) #calculate accuracy
                 print(f"--Consider removing the {k} feature.Accuracy: {accuracy:.4f} ")
                 
-                #get the lowest accuracy
-                if accuracy > best_so_far_accuracy:
+                #get best accuracy and which feature causes it
+                if accuracy >= best_so_far_accuracy:
                     best_so_far_accuracy = accuracy
                     feature_to_delete_at_this_level = k
         
-
-        if feature_to_delete_at_this_level is not None and global_accuracy <= best_so_far_accuracy:    
-            global_accuracy = best_so_far_accuracy
+        # check if feature was selected
+        if feature_to_delete_at_this_level is not None:
             current_set_of_features.remove(feature_to_delete_at_this_level) #remove feature with the least accuracy
+            #if removing feature improved accuracy, update global accuracy
+            if best_so_far_accuracy > global_accuracy: 
+                global_accuracy = best_so_far_accuracy
+                selected_set = current_set_of_features.copy() #save current set since we have better accuracy now
+            else:
+                print(f"Warning, Accuracy has decreased! Continuing search in case of local maxima") #if accruacy didnt improve
+
             print(f"On level {i} i removed feature {feature_to_delete_at_this_level} from the current set. Best so far accuracy: {best_so_far_accuracy:.4f}")
-    
 
-        #get the highest accuracy of all calculate accuracies so far
-        if global_accuracy > best_so_far_accuracy:
-            print(f"Warning, Accuracy has decreased! Continuing search in case of local maxima")
-
+        #stop if only 1 feature is left
         if len(current_set_of_features) <=1:
             break
     print(f"Final Accuracy:{global_accuracy:.4f}")
-    print(f"Final Selected Features: {current_set_of_features}")
+    print(f"Final Selected Features: {selected_set}")
 
 
 
@@ -156,8 +141,7 @@ if __name__ == "__main__":
     print(" (1) Forward Selection")
     print(" (2) Backward Elimination")
     option = input("Option: ")
-    data = np.loadtxt(dataSet)
-    #forwardSelection(data)
+    data = np.loadtxt(dataSet) #load dataset
 
     if option == "1":
         forwardSelection(data)
