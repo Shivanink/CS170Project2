@@ -60,8 +60,8 @@ def forwardSelection(data): #data is the data set youre intaking
 
     #initial accuracy with no features
     initialAcc = leave_one_out_cross_validation(data, current_set_of_features, None)
-    print(f"Running nearest neighbor with no features, using 'leave-one-out' evaluation. I get an accuracy of {initialAcc*100:.2f} %")
-    print("Beginning search...\n")
+    print(f"Running nearest neighbor with no features, using 'leave-one-out' evaluation. I get an accuracy of {initialAcc*100:.1f} %")
+    print("Beginning search.\n")
 
     for i in range(1, dsize): #first column is just label so it doesn't count, go up to last column
         print(f"On the {i}th level of the search tree")
@@ -72,12 +72,15 @@ def forwardSelection(data): #data is the data set youre intaking
         for k in range(1, dsize): #these nested loops helps us traverse through the search space  
             if k not in current_set_of_features:  #dont add duplicate features, make sure each feature is added only once
                 accuracy = leave_one_out_cross_validation(data,current_set_of_features, k) #we are looking to remember highest num
-                print(f"Using feature(s) {(current_set_of_features + [k])} accuracy is {accuracy*100:.2f} %")
+                print(f"Using feature(s) {(current_set_of_features + [k])} accuracy is {accuracy*100:.1f} %")
                
                 #get max (local accuracy) -> getting the best accuracy in k
                 if accuracy > best_so_far_accuracy:
                     best_so_far_accuracy = accuracy
                     feature_to_add_at_this_level = k #k feature gave us this accuracy so we want to add it
+    
+        
+
 
         
         #if new feature improves accuracy, add it to current set
@@ -86,12 +89,12 @@ def forwardSelection(data): #data is the data set youre intaking
             if global_accuracy < best_so_far_accuracy:
                 global_accuracy = best_so_far_accuracy
                 best_set = current_set_of_features.copy()
-                print(f"Feature set {current_set_of_features} was best, accuracy is {best_so_far_accuracy*100:.2f}%")
+                print(f"Feature set {current_set_of_features} was best, accuracy is {best_so_far_accuracy*100:.1f}%")
         else:
             print(f"Warning, Accuracy has decreased! Continuing search in case of local maxima") #ask if this is right
 
     endTime = time.time() #end timer
-    print(f"Finished Search! The best feature subset is {best_set}, which has an accuracy of {global_accuracy*100:.2f} %. The total time taken to execute is {endTime - startTime:.3f} seconds.")
+    print(f"Finished Search! The best feature subset is {best_set}, which has an accuracy of {global_accuracy*100:.1f} %. The total time taken to execute is {endTime - startTime:.3f} seconds.")
  
 def backwardElimination(data):
 
@@ -109,7 +112,7 @@ def backwardElimination(data):
 
     global_accuracy = leave_one_out_cross_validation(data, current_set_of_features, None)
     print(f"\nRunning nearest neighbor with all {dsize - 1} features, using 'leave-one-out' evaluation, I get an accuracy of {global_accuracy * 100:.1f}%")
-    print("Beginning search...\n")
+    print("Beginning search.\n")
 
     for i in range(1,dsize):
         print(f"On the {i}th level of the search tree")
@@ -123,7 +126,7 @@ def backwardElimination(data):
                 temp_set.remove(k)
 
                 accuracy = leave_one_out_cross_validation(data,temp_set, None) #calculate accuracy
-                print(f"Using feature(s) {temp_set} accuracy is {accuracy*100:.2f} %")
+                print(f"Using feature(s) {temp_set} accuracy is {accuracy*100:.1f} %")
                 
                 #get best accuracy and which feature causes it
                 if accuracy >= best_so_far_accuracy:
@@ -143,9 +146,6 @@ def backwardElimination(data):
 
             
 
-        #stop if only 1 feature is left
-        if len(current_set_of_features) <=1:
-            break
     
     endTime = time.time() #end timer
     print(f"Finished search! The best feature subset is {bestSet}, which has an accuracy of {global_accuracy * 100:.1f}%. Time taken to execute is {endTime - startTime:.3f} seconds.")
