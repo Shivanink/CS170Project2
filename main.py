@@ -4,6 +4,12 @@ import numpy as np #better for arrays
 
 
 #Note: I left some debug code to show my progress. 
+#References: I put all the general references in my report since I used them throughout the code and not at any particular part. 
+# I also inputted some specific references in the code below. 
+
+
+#For this function, I used this to learn how to use argmin:https://www.geeksforgeeks.org/numpy-argmin-python/ 
+#For KNN, I have inlcuded many links I referenced and  learned from in the report. 
 
 def leave_one_out_cross_validation(data, current_set, feature_to_add): #nearest neighbor, cs170 demo function in video
     #first column -> class     
@@ -30,7 +36,7 @@ def leave_one_out_cross_validation(data, current_set, feature_to_add): #nearest 
 
         #finds nearest neighbor
         nearest_neighbor_location = np.argmin(allDistances) #index of smallest value
-        nearest_neighbor_label = dcopy[nearest_neighbor_location, 0] #label of the neartest neighbpr
+        nearest_neighbor_label = dcopy[nearest_neighbor_location, 0] #label of the neartest neighbor
 
         if label_object_to_classify == nearest_neighbor_label: #count to check if classifcation was accurate/correct
             number_correctly_classified += 1
